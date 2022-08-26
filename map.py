@@ -2,13 +2,15 @@
 Base classes for OPAL
 """
 
-from typing import Dict
+import math
+from typing import Dict, List
 
 
 class Cell(object):
+    """ Represents a land cell in the simulation."""
     def __init__(self, x: int, y: int, cost: float, slope: float,
         fertility: float, composition: Dict[str, float]) -> None:
-        """ Creates a new cell with given parameters
+        """ Creates a new cell with given parameters.
 
         Parameters:
             x (int): x co-ordinate of cell
@@ -100,4 +102,65 @@ class Cell(object):
         """
         return self.get_species[species]
     
+class CellCollection(object):
+    """ Represents a group of cells in the simulation. """
+    def __init__(self, cells: List[Cell] = None) -> None:
+        """ Create a new CellCollection with an optional list of starting cells.
+        
+        Parameters:
+            cells (List[Cell]) (optional): starting cells
+        """
+        self.max_id = 0
 
+        #Dictionary of cells and their ids
+        self.cells = {}
+
+        for cell in cells:
+            self.add_cell(cell)
+    
+    def get_cells(self) -> List[Cell]:
+        """ Get a list of the cells within the collection
+        
+        Returns:
+            (List[Cell]): List of cells within this collection"""
+        return list(self.cells.keys())
+    
+    def add_cell(self, cell : Cell) -> None:
+        """ Adds a cell to the map
+        
+        Parameters:
+            cell (Cell): cell to be added
+        
+        Raises:
+            ValueError: if cell at the same (x, y) coordinates already in collection
+        """
+        for other_cell in self.get_cells():
+            if (cell.get_x() == other_cell.get_x() and 
+                cell.get_y() == other_cell.get_y()):
+                raise ValueError
+        else:
+            self.cells[cell] = self.max_id
+            self.max_id += 1
+    
+    def get_adjacents(self, cell: Cell) -> List[Cell]:
+        """Get the cells within the collection adjacent to a given cell.
+        
+        Parameters:
+            cell (Cell): cell to find adjacents of
+        
+        Returns:
+            (List[Cell]): list of cells within this collection adjacent to given cell.
+        """
+
+        adjacents = []
+        for other_cell in self.get_cells():
+            if ((other_cell.get_x() == cell.get_x() and
+                math.abs(other_cell.get_y() - cell.get_y()) == 1) or 
+                (other_cell.get_y() == cell.get_y() and
+                math.abs(other_cell.get_x() - cell.get_x()) == 1)):
+                adjacents.append(cell)
+
+        return adjacents
+    
+    def is_in(self, cell : Cell):
+        return (cell in self.get_cells())
