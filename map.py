@@ -6,9 +6,10 @@ from typing import Dict
 
 
 class Cell(object):
-    def __init__(self, x: int, y: int, species: Dict[str, float]) -> None:
+    def __init__(self, x: int, y: int, cost: float, species: Dict[str, float]) -> None:
         self.x = x
         self.y = y
+        self.cost = cost
         self.species = Dict
     
     def getX(self) -> int:
@@ -26,6 +27,14 @@ class Cell(object):
             (int): This cell's y-coordinate
         """
         return self.y
+    
+    def getCost(self) -> float:
+        """ Gets the cost of the cell
+        
+        Returns:
+            (float): This cell's cost
+        """
+        return self.cost
     
     def getSpecies(self) -> Dict[str, float]:
         """ Get a shallow copy of the cell's species population dictionary
