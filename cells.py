@@ -88,7 +88,7 @@ class Cell(object):
         Returns:
             (Dict[str, int]): This cell's community composition dictionary
         """
-        return self.species.copy()
+        return self.composition.copy()
     
     def get_species_population(self, species: str) -> float:
         """ Get the current population of a particular species in the cell 
@@ -104,7 +104,7 @@ class Cell(object):
     
 class CellCollection(object):
     """ Represents a group of cells in the simulation. """
-    def __init__(self, cells: List[Cell] = None) -> None:
+    def __init__(self, cells: List[Cell] = []) -> None:
         """ Create a new CellCollection with an optional list of starting cells.
         
         Parameters:
@@ -155,12 +155,21 @@ class CellCollection(object):
         adjacents = []
         for other_cell in self.get_cells():
             if ((other_cell.get_x() == cell.get_x() and
-                math.abs(other_cell.get_y() - cell.get_y()) == 1) or 
+                abs(other_cell.get_y() - cell.get_y()) == 1) or 
                 (other_cell.get_y() == cell.get_y() and
-                math.abs(other_cell.get_x() - cell.get_x()) == 1)):
-                adjacents.append(cell)
+                abs(other_cell.get_x() - cell.get_x()) == 1)):
+
+                adjacents.append(other_cell)
 
         return adjacents
     
-    def is_in(self, cell : Cell):
-        return (cell in self.get_cells())
+    def is_in(self, cell : Cell) -> bool:
+        """ Checks if a cell is in the collection 
+        
+        Parameters:
+            cell (Cell): cell to be checked whether in collection
+        
+        Returns:
+            (bool): true if cell in collection false otherwise
+        """
+        return self.cells.get(cell, -1) != -1
