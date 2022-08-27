@@ -114,7 +114,7 @@ class CellCollection(object):
 
         #Dictionary of cells and their ids
         self.cells = {}
-
+        
         for cell in cells:
             self.add_cell(cell)
     
@@ -123,7 +123,7 @@ class CellCollection(object):
         
         Returns:
             (List[Cell]): List of cells within this collection"""
-        return list(self.cells.keys())
+        return list(self.cells.keys()).copy()
     
     def add_cell(self, cell : Cell) -> None:
         """ Adds a cell to the map
@@ -192,15 +192,23 @@ def get_permutations(collection: CellCollection,
     """
     removals = []
     for cell in collection.get_cells():
-        removals.append(CellCollection(collection.get_cells().remove(cell)))
+        removed = collection.get_cells()
+        removed.remove(cell)
+        removals.append(CellCollection(removed))
 
     substitutions = []
     for removal in removals:
         for cell in ambient_collection.get_cells():
-            substitutions.append(CellCollection(removal.get_cells().append(cell)))
+            if not removal.is_in(cell):
+                substituted = removal.get_cells().copy()
+                substituted.append(cell)
+                substitutions.append(CellCollection(substituted))
     
     additions = []
     for cell in ambient_collection.get_cells():
-        additions.append(CellCollection(collection.get_cells().append(cell)))
+        if not collection.is_in(cell):
+            added = collection.get_cells()
+            added.append(cell)
+            additions.append(CellCollection(added))
     
     return removals + substitutions + additions
