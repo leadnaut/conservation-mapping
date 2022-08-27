@@ -2,7 +2,7 @@
 Base classes for OPAL
 """
 
-import math
+from itertools import permutations
 from typing import Dict, List
 
 
@@ -173,3 +173,34 @@ class CellCollection(object):
             (bool): true if cell in collection false otherwise
         """
         return self.cells.get(cell, -1) != -1
+
+
+def get_permutations(collection: CellCollection,
+    ambient_collection: CellCollection) -> List[CellCollection]:
+    """
+    Gets all small permutations of a given collection, given an ambient
+    collection. A permutation is defined as a collection where one element is
+    removed OR one element is added OR one element is replaced.
+    
+    Parameters:
+        collection (CellCollection): collection to permutate
+        ambient_collection (CellCollection): ambient collection to add new elements
+        from
+    
+    Returns:
+        List[CellCollection]: list of permutations
+    """
+    removals = []
+    for cell in collection.get_cells():
+        removals.append(CellCollection(collection.get_cells().remove(cell)))
+
+    substitutions = []
+    for removal in removals:
+        for cell in ambient_collection.get_cells():
+            substitutions.append(CellCollection(removal.get_cells().append(cell)))
+    
+    additions = []
+    for cell in ambient_collection.get_cells():
+        additions.append(CellCollection(collection.get_cells().append(cell)))
+    
+    return removals + substitutions + additions
