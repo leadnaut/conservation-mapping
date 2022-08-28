@@ -7,14 +7,12 @@ import random as r
 from cells import *
 import multiprocessing as mp
 
-POOL_PROCESSES = 2
 
 class Optimiser(object):
     """
     Object that handles OPAL's optimisation algorithm
     """
-    def __init__(self, all_cells: CellCollection, budget: float,
-        frugality: float, adj_weight: float) -> None:
+    def __init__(self, all_cells: CellCollection, budget: float, adj_weight: float) -> None:
         """ Creates a new Optimiser with given parameters
         
         Parameters:
@@ -26,11 +24,9 @@ class Optimiser(object):
         self.ambient_collection = all_cells
 
         self.total_cost = 0
-        self.total_opp_cost = 0
         self.max_comp_score = 0
         for cell in all_cells.get_cells():
             self.total_cost += cell.get_cost()
-            self.total_opp_cost += cell.get_opportunity_cost()
             prod = 1
             for pop in cell.get_composition().values():
                 prod *= pop
@@ -38,7 +34,6 @@ class Optimiser(object):
 
         #Eval Parameters
         self.budget = budget
-        self.frugality = frugality
         self.adj_weight = adj_weight
 
         #caching variables below
@@ -51,38 +46,35 @@ class Optimiser(object):
 
         collection (CellCollection): collection of cells to evaluate
         """
-        if self.collection_scores.get(collection, -1) != -1:
-            return self.collection_scores.get(collection)
+        if self.collection_scores.get(frozenset(collection.get_cells()), -1) != -1:
+            return self.collection_scores.get(frozenset(collection.get_cells()))
         
-        composition_score = 0
+        total_comps = {species : 0 for species in collection.get_cells()[0].get_composition().keys()}
         coll_adjacency = 0
         ambient_adjacency = 0
         total_cost = 0
-        total_opp_cost = 0
 
         for cell in collection.get_cells():
-            #get the product of the population levels -> encourages diversity
-            product = 1
-            for population in cell.get_composition().values():
-                product *= population
-            composition_score += product
+            for species, population in cell.get_composition().items():
+                total_comps[species] += population
 
             #get clumpedness level
             coll_adjacency += len(collection.get_adjacents(cell))
             ambient_adjacency += len(self.ambient_collection.get_adjacents(cell))
 
             total_cost += cell.get_cost()
-            total_opp_cost += cell.get_opportunity_cost()
 
         if total_cost > self.budget:
             return 0
         
-        opp_score = total_opp_cost / self.total_opp_cost
         adj_score = coll_adjacency / ambient_adjacency
 
-        score = (composition_score + self.adj_weight * adj_score 
-            - (self.frugality * opp_score))
-        self.collection_scores[collection] = score
+        composition_score = 1
+        for pop in total_comps.values():
+            composition_score *= pop
+
+        score = (composition_score) + adj_score * self.adj_weight
+        self.collection_scores[frozenset(collection.get_cells())] = score
         return score
 
     def run(self, gen_size: int) -> CellCollection:

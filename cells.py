@@ -2,7 +2,6 @@
 Base classes for OPAL
 """
 
-from itertools import permutations
 from typing import Dict, List
 
 
@@ -101,6 +100,7 @@ class Cell(object):
             KeyError: if specified species not in dictionary
         """
         return self.get_species[species]
+
     
 class CellCollection(object):
     """ Represents a group of cells in the simulation. """
@@ -173,6 +173,7 @@ class CellCollection(object):
             (bool): true if cell in collection false otherwise
         """
         return self.cells.get(cell, -1) != -1
+    
 
 
 def get_permutations(collection: CellCollection,

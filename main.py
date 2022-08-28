@@ -11,7 +11,10 @@ from optimiser import Optimiser
 
 if __name__ == "__main__":
     testcollection = csv_to_collection("testdata/test.csv")
-    optim = Optimiser(testcollection, 501, 100, 10000)
-    best = optim.run(10)
-    for cell in best.get_cells():
-        print(f"{cell.get_x()}, {cell.get_y()}")
+    optim = Optimiser(testcollection, 1000, 100)
+    best = optim.run(100)
+    with open("testdata/out.txt", "w") as f:
+        for cell in best.get_cells():
+            f.write(f"({cell.get_x()}, {cell.get_y()})\n")
+    
+    print(len(optim.collection_scores))
